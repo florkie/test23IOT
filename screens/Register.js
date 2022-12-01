@@ -1,12 +1,11 @@
 import {
+  Alert,
+  Image,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TextInput,
   TouchableOpacity,
-  Image,
-  Pressable,
-  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import dropLogo from "../assets/drop.png";
@@ -18,6 +17,7 @@ import {
 import { useState } from "react";
 
 import { createUser } from "../util/auth";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
 export default function Register() {
   const [locationPermissionInformation, requestPermission] =
@@ -52,6 +52,69 @@ export default function Register() {
     const location = await getCurrentPositionAsync();
     console.log(location);
     return location;
+  }
+
+  const {
+    container,
+    Input,
+    RegisterButton,
+    StandardText,
+    RegisterText,
+    ButtonText,
+    Drop,
+    PickerStyle,
+    PickerItemStyle,
+  } = styles;
+
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [locationPermission, setLocationPermission] = useState(false);
+
+  async function signupHandler() {
+    setIsRegistering(true);
+    const location = await getLocationHandler();
+    const res = await createUser(
+      username,
+      email,
+      password,
+      location,
+      role,
+      "test"
+    );
+    if (res) {
+      navigation.navigate("Login");
+
+      // currently, does not work with the navigation.navigate()
+      showMessage({
+        message: "Sucessfully created an account",
+        type: "success",
+      });
+    }
+    setIsRegistering(false);
+  }
+
+  function updateInputValueHandler(inputType, enteredValue) {
+    switch (inputType) {
+      case "username":
+        setUsername(enteredValue);
+        break;
+      case "email":
+        setEmail(enteredValue);
+        break;
+      case "password":
+        setPassword(enteredValue);
+        break;
+      case "repeatPassword":
+        setRepeatPassword(enteredValue);
+        break;
+      case "role":
+        setRole(enteredValue);
+        break;
+    }
   }
 
   const {
@@ -181,14 +244,13 @@ export default function Register() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: "#fff",
+    display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
+    textAlign: "center",
   },
   Drop: {
-    width: 71,
-    height: 98,
     marginBottom: 13,
   },
   RegisterText: {
@@ -218,11 +280,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "90%",
     marginTop: 22,
+    marginBottom: 30,
   },
   ButtonText: {
     color: "white",
     fontWeight: "700",
     fontSize: 24,
+    padding: 10,
   },
   PickerStyle: {
     width: "90%",
